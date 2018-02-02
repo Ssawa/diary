@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"path"
-	"time"
 
 	"github.com/Ssawa/diary/utils"
 	homedir "github.com/mitchellh/go-homedir"
@@ -21,11 +19,9 @@ var rootCmd = &cobra.Command{
 	Short: "Maintain diary entries",
 	Long:  `Create, maintain, and backup your daily text entries`,
 	Run: func(cmd *cobra.Command, args []string) {
-		now := time.Now()
-		relativePath := now.Format(viper.GetString("filename_format"))
-		basePath := viper.GetString("base")
-		fullPath := path.Join(relativePath, basePath)
-		os.MkdirAll(path.Dir(fullPath), 0600)
+		if err := utils.StartEntry(); err != nil {
+			utils.Fail(err)
+		}
 	},
 }
 
@@ -33,8 +29,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		utils.Fail(err)
 	}
 }
 
@@ -43,8 +38,7 @@ func init() {
 	var err error
 	home, err = homedir.Dir()
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		utils.Fail(err)
 	}
 
 	cobra.OnInitialize(initConfig, initLogger)
@@ -56,8 +50,12 @@ func init() {
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.BindPFlags(rootCmd.Flags())
 
-	viper.SetDefault("base", path.Join(home, "diary"))
-	viper.SetDefault("filename_format", "/2006/1/Mon-Jan-2-2006.md")
+	viper.SetDefault("file.base", path.Join(home, ".diary"))
+	viper.SetDefault("file.filename", "2006/1/2-Mon-Jan-2006.md")
+	viper.SetDefault("file.template.new", "# Monday January 2, 2006\n")
+	viper.SetDefault("file.template.append", "\n## At 3:04pm...\n")
+
+	viper.SetDefault("s3.enabled", false)
 
 	viper.BindEnv("editor", "EDITOR")
 }
