@@ -45,7 +45,15 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.diary.yaml)")
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Print verbose output")
-	rootCmd.Flags().StringP("editor", "e", "vim", "The editor to spawn")
+
+	// Viper has support for environment variable bindings but we want a different precedence order
+	// here than what they provide
+	defaultEditor := os.Getenv("EDITOR")
+	if defaultEditor == "" {
+		defaultEditor = "vim"
+	}
+
+	rootCmd.Flags().StringP("editor", "e", defaultEditor, "The editor to spawn")
 
 	viper.BindPFlags(rootCmd.PersistentFlags())
 	viper.BindPFlags(rootCmd.Flags())
@@ -56,8 +64,6 @@ func init() {
 	viper.SetDefault("file.template.append", "\n## At 3:04pm...\n")
 
 	viper.SetDefault("s3.enabled", false)
-
-	viper.BindEnv("editor", "EDITOR")
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -70,8 +76,6 @@ func initConfig() {
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".diary")
 	}
-
-	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
 	viper.ReadInConfig()
