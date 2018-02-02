@@ -66,7 +66,7 @@ func init() {
 	viper.BindPFlags(rootCmd.Flags())
 
 	viper.SetDefault("file.base", path.Join(home, ".diary"))
-	viper.SetDefault("file.filename", "2006/1/2-Mon-Jan-2006.md")
+	viper.SetDefault("file.template.path", "2006/1/2-Mon-Jan-2006.md")
 	viper.SetDefault("file.template.new", "# Monday January 2, 2006\n")
 	viper.SetDefault("file.template.append", "\n## At 3:04pm...\n")
 

@@ -21,7 +21,7 @@ type Entry struct {
 // NewEntry forms a new entry in the diary
 func NewEntry() Entry {
 	now := time.Now()
-	relativePath := now.Format(viper.GetString("file.filename"))
+	relativePath := now.Format(viper.GetString("file.template.path"))
 	basePath := viper.GetString("file.base")
 	fullPath := path.Join(basePath, relativePath)
 	return Entry{
