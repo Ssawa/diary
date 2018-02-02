@@ -10,20 +10,38 @@ import (
 	"github.com/spf13/viper"
 )
 
-// StartEntry is the entry point for creating a new entry file and allowing the user to edit it
-func StartEntry() error {
+// Entry represents an entry in the diary
+type Entry struct {
+	timestamp    time.Time
+	relativePath string
+	basePath     string
+	fullPath     string
+}
+
+// NewEntry forms a new entry in the diary
+func NewEntry() Entry {
 	now := time.Now()
 	relativePath := now.Format(viper.GetString("file.filename"))
 	basePath := viper.GetString("file.base")
 	fullPath := path.Join(basePath, relativePath)
-	Verbose.Println("Today's File: ", fullPath)
-	if err := os.MkdirAll(path.Dir(fullPath), os.ModePerm); err != nil {
+	return Entry{
+		timestamp:    now,
+		relativePath: relativePath,
+		basePath:     basePath,
+		fullPath:     fullPath,
+	}
+}
+
+// StartEntry is the entry point for creating a new entry file and allowing the user to edit it
+func StartEntry(entry Entry) error {
+	Verbose.Println("Today's File: ", entry.fullPath)
+	if err := os.MkdirAll(path.Dir(entry.fullPath), os.ModePerm); err != nil {
 		return err
 	}
-	if err := templateEntry(fullPath, now); err != nil {
+	if err := templateEntry(entry); err != nil {
 		return err
 	}
-	if err := spawnEditor(fullPath); err != nil {
+	if err := spawnEditor(entry.fullPath); err != nil {
 		return nil
 	}
 	Verbose.Println("File closed")
@@ -55,12 +73,12 @@ func spawnEditor(filename string) error {
 // creates it with the templated data rendered. If it already exists,
 // and the "append_template" config has been set then we append it to the
 // file
-func templateEntry(filename string, now time.Time) error {
+func templateEntry(entry Entry) error {
 	var file *os.File
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
+	if _, err := os.Stat(entry.fullPath); os.IsNotExist(err) {
 		Verbose.Println("File does not exist, creating template...")
-		newTemplate := now.Format(viper.GetString("file.template.new"))
-		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
+		newTemplate := entry.timestamp.Format(viper.GetString("file.template.new"))
+		file, err = os.OpenFile(entry.fullPath, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0600)
 		if err != nil {
 			return err
 		}
@@ -69,12 +87,12 @@ func templateEntry(filename string, now time.Time) error {
 			return err
 		}
 	} else {
-		file, err = os.OpenFile(filename, os.O_WRONLY|os.O_APPEND, 0600)
+		file, err = os.OpenFile(entry.fullPath, os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return nil
 		}
 	}
-	return appendEntry(file, now)
+	return appendEntry(file, entry.timestamp)
 }
 
 // appendEntry checks if the append_template has been set and, if it has,

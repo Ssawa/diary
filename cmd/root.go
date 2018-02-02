@@ -19,8 +19,15 @@ var rootCmd = &cobra.Command{
 	Short: "Maintain diary entries",
 	Long:  `Create, maintain, and backup your daily text entries`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := utils.StartEntry(); err != nil {
+		entry := utils.NewEntry()
+		if err := utils.StartEntry(entry); err != nil {
 			utils.Fail(err)
+		}
+
+		if viper.GetBool("s3.enabled") {
+			if err := utils.BackupFile(entry); err != nil {
+				utils.Fail(err)
+			}
 		}
 	},
 }
