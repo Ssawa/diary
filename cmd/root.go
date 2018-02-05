@@ -19,7 +19,7 @@ var rootCmd = &cobra.Command{
 	Short: "Maintain diary entries",
 	Long:  `Create, maintain, and backup your daily text entries`,
 	Run: func(cmd *cobra.Command, args []string) {
-		entry := utils.NewEntry()
+		entry := utils.NewEntry(utils.Entry{})
 		if err := utils.StartEntry(entry); err != nil {
 			utils.Fail(err)
 		}
