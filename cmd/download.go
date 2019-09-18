@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/Ssawa/diary/utils"
+	"github.com/cj-dimaggio/diary/utils"
 	"github.com/spf13/cobra"
 )
 

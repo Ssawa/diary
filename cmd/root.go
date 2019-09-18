@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/Ssawa/diary/utils"
+	"github.com/cj-dimaggio/diary/utils"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
